@@ -156,7 +156,16 @@
         function submitForm(event) {
             event.preventDefault();
             let isValid = true;
+            let validEmail = false;
+
             document.querySelectorAll('#checkin-form input').forEach(input => {
+                if (input.name == "email") {
+                    validEmail = input.checkValidity() && input.value != ""
+                    if (!validEmail) {
+                        input.classList.add('border-red-500');
+                        isValid = false;
+                    }
+                }
                 if (!input.value) {
                     input.classList.add('border-red-500');
                     isValid = false;
@@ -183,6 +192,10 @@
             if (!isValid) {
                 let errorMessageEnglish = 'Please complete all fields.';
                 let errorMessageThai = 'กรุณากรอกข้อมูลให้ครบถ้วน';
+                if (!validEmail) {
+                    errorMessageEnglish += ' Entered email is invalid.'
+                    errorMessageThai += ' กรุณากรอกข้อมูลให้ครบถ้วน อีเมลที่ป้อนไม่ใช้ได้';
+                }
                 if (currentLanguage == "th") {
                     alert(errorMessageThai);
                 } else {
