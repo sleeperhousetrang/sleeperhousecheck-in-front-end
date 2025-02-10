@@ -1,0 +1,21 @@
+{
+  "name": "sleeperhouse-self-checkin",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "npx tailwindcss -i ./precompiled_styles.css -o ./styles.css --minify"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^4.0.4"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.0.4",
+    "@tailwindcss/postcss": "^4.0.4"
+  }
+}

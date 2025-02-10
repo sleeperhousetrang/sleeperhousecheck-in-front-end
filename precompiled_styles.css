@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+.dropzone.border-red-500 {
+  border-color: #ef4444 !important; /* Forces red-500 */
+  border-width: 2px !important;
+}
+
+.dropzone {
+  border-style: dashed !important;
+}
+
+.dz-upload {
+  background-color: oklch(0.723 0.219 149.579) !important; /* Nice shade of green */
+  background-image: none !important;
+}

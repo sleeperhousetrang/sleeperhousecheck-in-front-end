@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleeper House - Self Check-In</title>
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <link rel="stylesheet" href="/styles.css" type="text/css">
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="max-w-lg mx-auto my-10 bg-white p-8 rounded-lg shadow-md">
+        <div class="flex justify-end space-x-4">
+            <button onclick="changeLanguage('en')" class="px-4 py-2 bg-red-700 text-white rounded">🇬🇧 EN</button>
+            <button onclick="changeLanguage('th')" class="px-4 py-2 bg-red-700 text-white rounded">🇹🇭 ไทย</button>
+        </div>
+        <div class="flex justify-center mb-6">
+            <img src="image.png" alt="Sleeper House Logo" class="h-48">
+        </div>
+
+
+
+        <h2 class="text-2xl font-bold text-red-700 mb-4 text-center" data-lang="en">Guest Check-In Form</h2>
+        <h2 class="text-2xl font-bold text-red-700 mb-4 text-center hidden" data-lang="th">แบบฟอร์มเช็คอิน</h2>
+
+        <form id="checkin-form" class="space-y-4">
+            <div>
+                <label class="block font-semibold" data-lang="en">Name</label>
+                <label class="block font-semibold hidden" data-lang="th">ชื่อ</label>
+                <input name="name" type="text" class="w-full p-2 border rounded">
+            </div>
+            <div>
+                <label class="block font-semibold" data-lang="en">Email</label>
+                <label class="block font-semibold hidden" data-lang="th">อีเมล</label>
+                <input name="email" type="email" class="w-full p-2 border rounded">
+            </div>
+            <div>
+                <label class="block font-semibold" data-lang="en">Phone / Contact Number</label>
+                <label class="block font-semibold hidden" data-lang="th">เบอร์โทรศัพท์ / ไลน์ / วีแชท</label>
+                <input name="contact_number" type="text" class="w-full p-2 border rounded">
+            </div>
+            <div>
+                <label class="block font-semibold" data-lang="en">Number of Guests</label>
+                <label class="block font-semibold hidden" data-lang="th">จำนวนแขก</label>
+                <input name="number_of_guests" type="number" value="1" min="1" max="20" class="w-full p-2 border rounded">
+            </div>
+            <div>
+                <label class="block font-semibold" data-lang="en">Dates of Stay</label>
+                <label class="block font-semibold hidden" data-lang="th">วันที่เข้าพัก</label>
+                <input id="stay_start_date" name="stay_start_date" type="date" class="p-2 border rounded">
+                --
+                <input id="stay_end_date" name="stay_end_date" type="date" class="p-2 border rounded">
+            </div>
+            <div>
+                <label class="block font-semibold" data-lang="en">Expected Check-Out Time</label>
+                <label class="block font-semibold hidden" data-lang="th">เวลาเช็คเอาท์</label>
+                <label class="block" data-lang="en">Check-out time is from 7:30AM to 11:00AM</label>
+                <select class="p-2 border rounded" name="expected_checkout_time" id="expected_checkout_time">
+                    <option value=""></option>
+                    <option value="07:30 AM">7:30 AM</option>
+                    <option value="07:45 AM">7:45 AM</option>
+                    <option value="08:00 AM">8:00 AM</option>
+                    <option value="08:15 AM">8:15 AM</option>
+                    <option value="08:30 AM">8:30 AM</option>
+                    <option value="08:45 AM">8:45 AM</option>
+                    <option value="09:00 AM">9:00 AM</option>
+                    <option value="09:15 AM">9:15 AM</option>
+                    <option value="09:30 AM">9:30 AM</option>
+                    <option value="09:45 AM">9:45 AM</option>
+                    <option value="10:00 AM">10:00 AM</option>
+                    <option value="10:15 AM">10:15 AM</option>
+                    <option value="10:30 AM">10:30 AM</option>
+                    <option value="10:45 AM">10:45 AM</option>
+                    <option value="11:00 AM">11:00 AM</option>
+                  </select>
+
+
+            </div>
+            <div>
+                <label class="block font-semibold" data-lang="en">Upload Thai ID / Passport</label>
+                <label class="block" data-lang="en">Please upload IDs for each staying guest.</label>
+                <label class="block font-semibold hidden" data-lang="th">อัปโหลดบัตรประชาชนของทุกท่าน / หนังสือเดินทางของทุกท่าน</label>
+                <label class="block" data-lang="en"></label>
+            </div>
+            <div class="dropzone mt-4 border-dashed border-2 p-4" id="file-upload"></div>
+            <input type="hidden" name="uploadedFiles" id="uploaded-files" value="[]">
+
+            <p class="text-sm text-gray-700 mt-4" data-lang="en">
+                For the comfort of our guests, Sleeper House is a non-smoking property (smoking indoors is prohibited) and durians are prohibited. Each room has a safe deposit box. The dorm room has lockers for each bed (lock must be self-provided).
+            </p>
+            <p class="text-sm text-gray-700 mt-4 hidden" data-lang="th">
+                เพื่อความสะดวกสบายของแขกที่พัก Sleeper House เป็นที่พักปลอดบุหรี่ (ห้ามสูบบุหรี่ภายในอาคาร) และห้ามนำทุเรียนเข้ามา แต่ละห้องมีตู้เซฟ และห้องพักรวมมีล็อกเกอร์สำหรับแต่ละเตียง (กรุณานำกุญแจมาเอง)
+            </p>
+            <button id="submit-btn" type="submit" class="relative flex items-center justify-center bg-red-700 text-white px-4 py-2 rounded w-full" onclick="submitForm(event)">
+                <svg id="spinner" class="hidden absolute left-4 w-6 h-6 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span id="button-text" data-lang="en">Submit</span>
+                <span id="button-text" class="hidden" data-lang="th">Submit</span>
+            </button>
+        </form>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", (event) => {
+            let today = new Date();
+            let tomorrow = new Date(today.getTime() + 86400000);
+            document.getElementById("stay_start_date").valueAsDate = today;
+            document.getElementById("stay_end_date").valueAsDate = tomorrow;
+        });
+
+        function changeLanguage(lang) {
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                el.classList.toggle('hidden', el.getAttribute('data-lang') !== lang);
+                currentLanguage = lang;
+                let existingFiles = dropzone.files;
+                dropzone.destroy();
+                createDropzone(currentLanguage, existingFiles);
+            });
+        }
+
+        function enableSubmitButton() {
+            document.getElementById("spinner").classList.add('hidden');
+            document.getElementById("submit-btn").disabled = false;
+            document.getElementById("submit-btn").classList.add('bg-red-700');
+            document.getElementById("submit-btn").classList.remove('bg-gray-500');
+        }
+
+        function disableSubmitButton() {
+            document.getElementById("spinner").classList.remove('hidden');
+            document.getElementById("submit-btn").disabled = true;
+            document.getElementById("submit-btn").classList.add('bg-gray-500');
+            document.getElementById("submit-btn").classList.remove('bg-red-700');
+        }
+    </script>
+    <script>
+        Dropzone.autoDiscover = false;
+        let uploadedFiles = [];
+        let dropzone = null;
+        let currentLanguage = "en";
+        const currentTimestamp = Date.now();
+        const backendUrl = "https://phm4pqay5epdxoo7up3fxwkqya0rgsfd.lambda-url.us-east-2.on.aws";
+        // const backendUrl = "http://localhost:8000"
+
+        function submitForm(event) {
+            event.preventDefault();
+            let isValid = true;
+            document.querySelectorAll('#checkin-form input').forEach(input => {
+                if (!input.value) {
+                    input.classList.add('border-red-500');
+                    isValid = false;
+                } else {
+                    input.classList.remove('border-red-500');
+                }
+            });
+
+            let expectedCheckoutTime = document.getElementById("expected_checkout_time")
+            if (expectedCheckoutTime.value == "") {
+                expectedCheckoutTime.classList.add('border-red-500');
+                isValid = false
+            } else {
+                expectedCheckoutTime.classList.remove('border-red-500');
+            }
+
+            if (dropzone.files.length < 1) {
+                document.getElementById('file-upload').classList.add('border-red-500');
+                isValid = false;
+            } else {
+                document.getElementById('file-upload').classList.remove('border-red-500');
+            }
+
+            if (!isValid) {
+                let errorMessageEnglish = 'Please complete all fields.';
+                let errorMessageThai = 'กรุณากรอกข้อมูลให้ครบถ้วน';
+                if (currentLanguage == "th") {
+                    alert(errorMessageThai);
+                } else {
+                    alert(errorMessageEnglish);
+                }
+                return
+            }
+            disableSubmitButton();
+            let formData = Object.fromEntries(new FormData(document.getElementById("checkin-form")).entries());
+            fetch(`${backendUrl}/formSubmit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/checkin-success';
+                } else {
+                    enableSubmitButton();
+                    alert('There was an error submitting your check-in. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An unexpected error occurred. Please try again later.');
+            });
+        }
+
+        function guidGenerator() {
+            let S4 = function() {
+              return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+            };
+            return S4()+S4();
+        }
+
+
+        function createDropzone(lang, existingFiles) {
+            dropzone = new Dropzone("#file-upload", {
+            url: `${backendUrl}/b2PresignedUrl`, // This will be replaced dynamically
+            method: "POST",
+            sending: function(file, xhr) {
+                var _send = xhr.send;
+                xhr.send = function() {
+                    _send.call(xhr, file);
+                };
+            },
+            renameFile: function(file) {
+                const currentDate = new Date();
+                let formattedDate = currentDate.toISOString().split('T')[0];
+                return `${formattedDate}/${currentTimestamp}/p${guidGenerator()}-${file.name}`;
+            },
+            maxFilesize: 20, // 10 MB limit
+            paramName: "file",
+            parallelUploads: 10, // Allow multiple files
+            uploadMultiple: false,
+            chunking: false,
+            autoProcessQueue: false,
+            addRemoveLinks: true,
+            dictDefaultMessage: '<i class="fa-solid fa-upload text-gray-500 p-2 text-4xl"></i>',
+            dictCancelUpload: '<i class="fa-solid fa-circle-xmark text-red-700 text-2xl"></i>',
+            dictRemoveFile: '<i class="fa-solid fa-circle-xmark text-red-700 text-2xl"></i>',
+
+            init: function () {
+                let dz = this;
+                existingFiles.forEach((file) => {
+                    dz.files.push(file);
+                    dz.emit("addedfile", file);
+                    dz.emit("thumbnail", file, file.dataURL || file.previewElement.querySelector("img")?.src);
+                    dz.emit("complete", file);
+                    uploadedFiles.push(file.upload.filename);
+                    document.getElementById("uploaded-files").value = JSON.stringify(uploadedFiles);
+                });
+
+                this.on("addedfile", async function (file) {
+                    // Request a B2 Upload URL
+                    disableSubmitButton();
+                    const response = await fetch(`${backendUrl}/b2PresignedUrl`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    const data = await response.json();
+                    file.b2UploadUrl = data.uploadUrl;
+                    file.b2AuthToken = data.authorizationToken;
+                    file.b2FilePath = data.filePath; // Store file path from server response
+                    this.processFile(file);
+                });
+
+                this.on("queuecomplete", function(){
+                    enableSubmitButton();
+                });
+
+                this.on("sending", function (file, xhr, formData) {
+                    xhr.open("POST", file.b2UploadUrl, true);
+                    xhr.setRequestHeader("Authorization", file.b2AuthToken);
+                    xhr.setRequestHeader("X-Bz-File-Name", encodeURIComponent(file.upload.filename));
+                    xhr.setRequestHeader("Content-Type", file.type);
+                    xhr.setRequestHeader("X-Bz-Content-Sha1", "do_not_verify");
+
+                    // Display progress bar
+                    file.previewElement.querySelector(".dz-progress").style.display = "block";
+                });
+
+                this.on("uploadprogress", function (file, progress, bytesSent) {
+                    // Update the progress bar
+                    let progressBar = file.previewElement.querySelector(".dz-upload");
+                    progressBar.style.width = progress + "%";
+                    progressBar.textContent = Math.round(progress) + "%";
+                });
+
+                this.on("success", function (file, response) {
+                    // Store uploaded file path
+                    uploadedFiles.push(response.fileName);
+                    console.log("uploaded files:", uploadedFiles)
+                    document.getElementById("uploaded-files").value = JSON.stringify(uploadedFiles);
+                    file.previewElement.querySelector(".dz-success-mark").style.opacity = "1";
+                });
+
+                this.on("removedfile", function (file) {
+                    const index = uploadedFiles.indexOf(file.upload.filename);
+                    if (index > -1) {
+                        uploadedFiles.splice(index, 1);
+                        document.getElementById("uploaded-files").value = JSON.stringify(uploadedFiles);
+                    }
+                    console.log("removed file; uploaded files", uploadedFiles)
+                });
+
+                this.on("error", function (file, errorMessage) {
+                    console.error("Upload error", file.name, errorMessage);
+                });
+            }
+            });
+        }
+
+        createDropzone(currentLanguage, []);
+
+      </script>
+</body>
+</html>
+

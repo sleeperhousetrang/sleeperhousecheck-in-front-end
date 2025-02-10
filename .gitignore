@@ -1,0 +1,3 @@
+node_modules/**
+backend/terraform/.terraform/*
+backend/terraform/files/*
