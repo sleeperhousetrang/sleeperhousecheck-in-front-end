@@ -234,6 +234,19 @@
             }
             disableSubmitButton();
             let formData = Object.fromEntries(new FormData(document.getElementById("checkin-form")).entries());
+
+            // Add uploaded files to the form data
+            formData.uploadedFiles = uploadedFiles;
+
+            // Show all form data in an alert for testing
+            let formDataString = JSON.stringify(formData, null, 2);
+            alert('Form data that would be submitted:\n\n' + formDataString);
+
+            // Re-enable submit button after showing alert
+            enableSubmitButton();
+
+            // Comment out actual submission for testing
+            /*
             fetch(`${backendUrl}/formSubmit`, {
                 method: 'POST',
                 headers: {
@@ -255,6 +268,7 @@
                 console.error('Error:', error);
                 alert('An unexpected error occurred. Please try again later.');
             });
+            */
         }
 
         function guidGenerator() {
