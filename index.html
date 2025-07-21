@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sleeper House - Self Check-In</title>
-    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.css" type="text/css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
     <link rel="stylesheet" href="styles.css" type="text/css">
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -19,8 +18,6 @@
         <div class="flex justify-center mb-6">
             <img src="image.png" alt="Sleeper House Logo" class="h-48">
         </div>
-
-
 
         <h2 class="text-2xl font-bold text-red-700 mb-4 text-center" data-lang="en">Guest Check-In Form</h2>
         <h2 class="text-2xl font-bold text-red-700 mb-4 text-center hidden" data-lang="th">แบบฟอร์มเช็คอิน</h2>
@@ -59,24 +56,22 @@
                 <label class="block" data-lang="en">Check-out time is from 7:30AM to 11:00AM</label>
                 <select class="p-2 border rounded" name="expected_checkout_time" id="expected_checkout_time">
                     <option value=""></option>
-                    <option value="07:30 AM">7:30 AM</option>
-                    <option value="07:45 AM">7:45 AM</option>
-                    <option value="08:00 AM">8:00 AM</option>
-                    <option value="08:15 AM">8:15 AM</option>
-                    <option value="08:30 AM">8:30 AM</option>
-                    <option value="08:45 AM">8:45 AM</option>
-                    <option value="09:00 AM">9:00 AM</option>
-                    <option value="09:15 AM">9:15 AM</option>
-                    <option value="09:30 AM">9:30 AM</option>
-                    <option value="09:45 AM">9:45 AM</option>
+                    <option value="7:30 AM">7:30 AM</option>
+                    <option value="7:45 AM">7:45 AM</option>
+                    <option value="8:00 AM">8:00 AM</option>
+                    <option value="8:15 AM">8:15 AM</option>
+                    <option value="8:30 AM">8:30 AM</option>
+                    <option value="8:45 AM">8:45 AM</option>
+                    <option value="9:00 AM">9:00 AM</option>
+                    <option value="9:15 AM">9:15 AM</option>
+                    <option value="9:30 AM">9:30 AM</option>
+                    <option value="9:45 AM">9:45 AM</option>
                     <option value="10:00 AM">10:00 AM</option>
                     <option value="10:15 AM">10:15 AM</option>
                     <option value="10:30 AM">10:30 AM</option>
                     <option value="10:45 AM">10:45 AM</option>
                     <option value="11:00 AM">11:00 AM</option>
                   </select>
-
-
             </div>
             <div>
                 <label class="block font-semibold" data-lang="en">Upload Thai ID / Passport</label>
@@ -120,28 +115,14 @@
             document.getElementById("stay_end_date").valueAsDate = tomorrow;
         });
 
-        function changeLanguage(lang) {
-            // Don't allow language change if uploads are in progress
-            if (isUploading || uploadCount > 0) {
-                let errorMessageEnglish = 'Please wait for all uploads to complete before changing language.';
-                let errorMessageThai = 'กรุณารอให้การอัปโหลดเสร็จสิ้นก่อนเปลี่ยนภาษา';
-                if (lang === "th") {
-                    alert(errorMessageThai);
-                } else {
-                    alert(errorMessageEnglish);
-                }
-                return;
-            }
-
-            document.querySelectorAll('[data-lang]').forEach(el => {
-                el.classList.toggle('hidden', el.getAttribute('data-lang') !== lang);
-                currentLanguage = lang;
-                // Only pass files that were actually successfully uploaded
-                let existingFiles = dropzone.files.filter(file => file.status === Dropzone.SUCCESS);
-                dropzone.destroy();
-                createDropzone(currentLanguage, existingFiles);
-            });
-        }
+        // Global variables for Dropzone management
+        Dropzone.autoDiscover = false;
+        let uploadedFiles = []; // Stores successfully uploaded file names from the server response
+        let dropzoneInstance = null; // Renamed to avoid conflict with `dropzone`
+        let currentLanguage = "en";
+        const currentTimestamp = Date.now();
+        const backendUrl = "https://phm4pqay5epdxoo7up3fxwkqya0rgsfd.lambda-url.us-east-2.on.aws";
+        // const backendUrl = "http://localhost:8000"
 
         function enableSubmitButton() {
             document.getElementById("spinner").classList.add('hidden');
@@ -156,17 +137,40 @@
             document.getElementById("submit-btn").classList.add('bg-gray-500');
             document.getElementById("submit-btn").classList.remove('bg-red-700');
         }
-    </script>
-    <script>
-        Dropzone.autoDiscover = false;
-        let uploadedFiles = [];
-        let dropzone = null;
-        let currentLanguage = "en";
-        let isUploading = false;
-        let uploadCount = 0;
-        const currentTimestamp = Date.now();
-        const backendUrl = "https://phm4pqay5epdxoo7up3fxwkqya0rgsfd.lambda-url.us-east-2.on.aws";
-        // const backendUrl = "http://localhost:8000"
+
+        function changeLanguage(lang) {
+            // Check if any files are currently uploading or are in the queue
+            if (dropzoneInstance && (dropzoneInstance.getUploadingFiles().length > 0 || dropzoneInstance.getQueuedFiles().length > 0)) {
+                let errorMessageEnglish = 'Please wait for all uploads to complete before changing language.';
+                let errorMessageThai = 'กรุณารอให้การอัปโหลดเสร็จสิ้นก่อนเปลี่ยนภาษา';
+                alert(lang === "th" ? errorMessageThai : errorMessageEnglish);
+                return;
+            }
+
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                el.classList.toggle('hidden', el.getAttribute('data-lang') !== lang);
+            });
+            currentLanguage = lang;
+
+            // Update Dropzone messages directly on the instance
+            if (dropzoneInstance) {
+                dropzoneInstance.options.dictDefaultMessage = currentLanguage === "th" ?
+                    '<i class="fa-solid fa-upload text-gray-500 p-2 text-4xl"></i><br>อัปโหลดไฟล์ที่นี่' :
+                    '<i class="fa-solid fa-upload text-gray-500 p-2 text-4xl"></i><br>Drop files here to upload';
+                dropzoneInstance.options.dictCancelUpload = currentLanguage === "th" ?
+                    '<i class="fa-solid fa-circle-xmark text-red-700 text-2xl"></i> ยกเลิก' :
+                    '<i class="fa-solid fa-circle-xmark text-red-700 text-2xl"></i> Cancel';
+                dropzoneInstance.options.dictRemoveFile = currentLanguage === "th" ?
+                    '<i class="fa-solid fa-circle-xmark text-red-700 text-2xl"></i> ลบไฟล์' :
+                    '<i class="fa-solid fa-circle-xmark text-red-700 text-2xl"></i> Remove file';
+
+                // Manually update the default message element if it exists
+                const defaultMessageElement = dropzoneInstance.element.querySelector('.dz-message');
+                if (defaultMessageElement) {
+                     defaultMessageElement.innerHTML = dropzoneInstance.options.dictDefaultMessage;
+                }
+            }
+        }
 
         function submitForm(event) {
             event.preventDefault();
@@ -181,7 +185,7 @@
                         isValid = false;
                     }
                 }
-                if (!input.value) {
+                if (!input.value && input.type !== 'file') { // Exclude file input from general validation
                     input.classList.add('border-red-500');
                     isValid = false;
                 } else {
@@ -198,20 +202,14 @@
             }
 
             // Check if uploads are still in progress
-            if (isUploading || uploadCount > 0) {
+            if (dropzoneInstance && (dropzoneInstance.getUploadingFiles().length > 0 || dropzoneInstance.getQueuedFiles().length > 0)) {
                 let errorMessageEnglish = 'Please wait for all uploads to complete before submitting.';
                 let errorMessageThai = 'กรุณารอให้การอัปโหลดเสร็จสิ้นก่อนส่งแบบฟอร์ม';
-                if (currentLanguage == "th") {
-                    alert(errorMessageThai);
-                } else {
-                    alert(errorMessageEnglish);
-                }
+                alert(currentLanguage == "th" ? errorMessageThai : errorMessageEnglish);
                 return;
             }
 
-            // Use a more robust way to check uploaded files
-            let currentUploadedFiles = [...uploadedFiles]; // Create a snapshot
-            if (currentUploadedFiles.length < 1) {
+            if (uploadedFiles.length < 1) { // Use the `uploadedFiles` array for validation
                 document.getElementById('file-upload').classList.add('border-red-500');
                 isValid = false;
             } else {
@@ -225,15 +223,16 @@
                     errorMessageEnglish += ' Entered email is invalid.'
                     errorMessageThai += ' กรุณากรอกข้อมูลให้ครบถ้วน อีเมลที่ป้อนไม่ใช้ได้';
                 }
-                if (currentLanguage == "th") {
-                    alert(errorMessageThai);
-                } else {
-                    alert(errorMessageEnglish);
-                }
-                return
+                alert(currentLanguage == "th" ? errorMessageThai : errorMessageEnglish);
+                return;
             }
+
             disableSubmitButton();
             let formData = Object.fromEntries(new FormData(document.getElementById("checkin-form")).entries());
+
+            // Add uploaded files to the form data
+            formData.uploadedFiles = uploadedFiles;
+
             fetch(`${backendUrl}/formSubmit`, {
                 method: 'POST',
                 headers: {
@@ -264,142 +263,170 @@
             return S4()+S4();
         }
 
+        function initializeDropzone() {
+            // Check if Dropzone instance already exists to prevent re-initialization
+            if (dropzoneInstance) {
+                return;
+            }
 
-        function createDropzone(lang, existingFiles) {
-            dropzone = new Dropzone("#file-upload", {
-            url: `${backendUrl}/b2PresignedUrl`, // This will be replaced dynamically
-            method: "POST",
-            sending: function(file, xhr) {
-                var _send = xhr.send;
-                xhr.send = function() {
-                    _send.call(xhr, file);
-                };
-            },
-            renameFile: function(file) {
-                const currentDate = new Date();
-                let formattedDate = currentDate.toISOString().split('T')[0];
-                return `${formattedDate}/${currentTimestamp}/p${guidGenerator()}-${file.name}`;
-            },
-            maxFilesize: 20, // 10 MB limit
-            paramName: "file",
-            parallelUploads: 10, // Allow multiple files
-            uploadMultiple: false,
-            chunking: false,
-            autoProcessQueue: false,
-            addRemoveLinks: true,
-            dictDefaultMessage: '<i class="fa-solid fa-upload text-gray-500 p-2 text-4xl"></i>',
-            dictCancelUpload: '<i class="fa-solid fa-circle-xmark text-red-700 text-2xl"></i>',
-            dictRemoveFile: '<i class="fa-solid fa-circle-xmark text-red-700 text-2xl"></i>',
+            dropzoneInstance = new Dropzone("#file-upload", {
+                url: `${backendUrl}/b2PresignedUrl`, // This will be replaced dynamically
+                method: "POST",
+                sending: function(file, xhr) {
+                    var _send = xhr.send;
+                    xhr.send = function() {
+                        _send.call(xhr, file);
+                    };
+                },
+                renameFile: function(file) {
+                    const currentDate = new Date();
+                    let formattedDate = currentDate.toISOString().split('T')[0];
+                    return `${formattedDate}/${currentTimestamp}/p${guidGenerator()}-${file.name}`;
+                },
+                maxFilesize: 20, // 20 MB limit
+                paramName: "file",
+                parallelUploads: 10, // Allow multiple files
+                uploadMultiple: false,
+                chunking: false,
+                autoProcessQueue: false,
+                addRemoveLinks: true,
+                dictDefaultMessage: currentLanguage === "th" ?
+                    '<i class="fa-solid fa-upload text-gray-500 p-2 text-4xl"></i><br>อัปโหลดไฟล์ที่นี่' :
+                    '<i class="fa-solid fa-upload text-gray-500 p-2 text-4xl"></i><br>Drop files here to upload',
+                dictCancelUpload: currentLanguage === "th" ?
+                    '<i class="fa-solid fa-circle-xmark text-red-700 text-2xl"></i> ยกเลิก' :
+                    '<i class="fa-solid fa-circle-xmark text-red-700 text-2xl"></i> Cancel',
+                dictRemoveFile: currentLanguage === "th" ?
+                    '<i class="fa-solid fa-circle-xmark text-red-700 text-2xl"></i> ลบไฟล์' :
+                    '<i class="fa-solid fa-circle-xmark text-red-700 text-2xl"></i> Remove file',
 
-            init: function () {
-                let dz = this;
-                existingFiles.forEach((file) => {
-                    dz.files.push(file);
-                    dz.emit("addedfile", file);
-                    dz.emit("thumbnail", file, file.dataURL || file.previewElement.querySelector("img")?.src);
-                    dz.emit("complete", file);
-                    uploadedFiles.push(file.upload.filename);
-                    document.getElementById("uploaded-files").value = JSON.stringify(uploadedFiles);
-                });
+                init: function () {
+                    let dz = this; // Capture 'this' for use in callbacks
 
-                this.on("addedfile", async function (file) {
-                    // Request a B2 Upload URL
-                    disableSubmitButton();
-                    isUploading = true;
-                    uploadCount++;
-
-                    const response = await fetch(`${backendUrl}/b2PresignedUrl`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
+                    // Re-add existing uploaded files visually when initializing
+                    uploadedFiles.forEach(fileName => {
+                        let mockFile = {
+                            name: fileName.split('/').pop(), // Get original file name from path
+                            size: 0, // Size is not available, but required by Dropzone
+                            status: Dropzone.SUCCESS,
+                            accepted: true,
+                            upload: {
+                                filename: fileName // Store the full path for internal use
+                            }
+                        };
+                        dz.files.push(mockFile);
+                        dz.emit("addedfile", mockFile);
+                        dz.emit("complete", mockFile);
+                        dz.emit("thumbnail", mockFile, null); // No thumbnail for re-added files unless stored
                     });
 
-                    const data = await response.json();
-                    file.b2UploadUrl = data.uploadUrl;
-                    file.b2AuthToken = data.authorizationToken;
-                    file.b2FilePath = data.filePath; // Store file path from server response
-                    this.processFile(file);
-                });
-
-                this.on("queuecomplete", function(){
-                    enableSubmitButton();
-                });
-
-                this.on("sending", function (file, xhr, formData) {
-                    xhr.open("POST", file.b2UploadUrl, true);
-                    xhr.setRequestHeader("Authorization", file.b2AuthToken);
-                    xhr.setRequestHeader("X-Bz-File-Name", encodeURIComponent(file.upload.filename));
-                    xhr.setRequestHeader("Content-Type", file.type);
-                    xhr.setRequestHeader("X-Bz-Content-Sha1", "do_not_verify");
-
-                    // Display progress bar
-                    file.previewElement.querySelector(".dz-progress").style.display = "block";
-                });
-
-                this.on("uploadprogress", function (file, progress, bytesSent) {
-                    // Update the progress bar
-                    let progressBar = file.previewElement.querySelector(".dz-upload");
-                    progressBar.style.width = progress + "%";
-                    progressBar.textContent = Math.round(progress) + "%";
-                });
-
-                this.on("success", function (file, response) {
-                    // Store uploaded file path
-                    uploadedFiles.push(response.fileName);
-                    console.log("uploaded files:", uploadedFiles)
-                    document.getElementById("uploaded-files").value = JSON.stringify(uploadedFiles);
-                    file.previewElement.querySelector(".dz-success-mark").style.opacity = "1";
-
-                    // Update upload state
-                    uploadCount--;
-                    if (uploadCount <= 0) {
-                        isUploading = false;
-                        uploadCount = 0;
-                    }
-                });
-
-                this.on("removedfile", function (file) {
-                    const index = uploadedFiles.indexOf(file.upload.filename);
-                    if (index > -1) {
-                        uploadedFiles.splice(index, 1);
-                        document.getElementById("uploaded-files").value = JSON.stringify(uploadedFiles);
-                    }
-                    console.log("removed file; uploaded files", uploadedFiles)
-
-                    // If file was being uploaded, update upload state
-                    if (file.status === Dropzone.UPLOADING) {
-                        uploadCount--;
-                        if (uploadCount <= 0) {
-                            isUploading = false;
-                            uploadCount = 0;
+                    this.on("addedfile", async function (file) {
+                        disableSubmitButton();
+                        try {
+                            const response = await fetch(`${backendUrl}/b2PresignedUrl`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' }
+                            });
+                            const data = await response.json();
+                            file.b2UploadUrl = data.uploadUrl;
+                            file.b2AuthToken = data.authorizationToken;
+                            file.b2FilePath = data.filePath; // Store file path from server response
+                            this.processFile(file); // Process the file once URL is obtained
+                        } catch (error) {
+                            console.error("Error fetching presigned URL:", error);
+                            // Emit error and remove file if URL fetch fails
+                            this.emit("error", file, "Error fetching upload URL.");
+                            this.removeFile(file); // Manually remove the file from Dropzone display
+                            // Ensure button is re-enabled if no other uploads are pending
+                            if (this.getUploadingFiles().length === 0 && this.getQueuedFiles().length === 0) {
+                                enableSubmitButton();
+                            }
                         }
-                    }
-                });
+                    });
 
-                this.on("error", function (file, errorMessage) {
-                    console.error("Upload error", file.name, errorMessage);
-                    let errorMsgEnglish = `Failed to upload ${file.name}. Please try uploading again. If the problem persists, please check your internet connection and try again.`;
-                    let errorMsgThai = `ไม่สามารถอัปโหลด ${file.name} ได้ กรุณาลองอัปโหลดอีกครั้ง หากยังมีปัญหา กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองอีกครั้ง`;
+                    this.on("queuecomplete", function(){
+                        // Enable submit button only if no uploads are in progress
+                        if (this.getUploadingFiles().length === 0 && this.getQueuedFiles().length === 0) {
+                            enableSubmitButton();
+                        }
+                    });
 
-                    if (currentLanguage == "th") {
-                        alert(errorMsgThai);
-                    } else {
-                        alert(errorMsgEnglish);
-                    }
+                    this.on("sending", function (file, xhr, formData) {
+                        xhr.open("POST", file.b2UploadUrl, true);
+                        xhr.setRequestHeader("Authorization", file.b2AuthToken);
+                        xhr.setRequestHeader("X-Bz-File-Name", encodeURIComponent(file.upload.filename));
+                        xhr.setRequestHeader("Content-Type", file.type);
+                        xhr.setRequestHeader("X-Bz-Content-Sha1", "do_not_verify");
 
-                    // Update upload state
-                    uploadCount--;
-                    if (uploadCount <= 0) {
-                        isUploading = false;
-                        uploadCount = 0;
-                    }
-                });
-            }
+                        // Display progress bar
+                        const progressBar = file.previewElement.querySelector(".dz-progress");
+                        if (progressBar) { // Check if element exists before accessing style
+                            progressBar.style.display = "block";
+                        }
+                    });
+
+                    this.on("uploadprogress", function (file, progress, bytesSent) {
+                        // Update the progress bar
+                        let progressBar = file.previewElement.querySelector(".dz-upload");
+                        if (progressBar) { // Ensure progressBar exists
+                            progressBar.style.width = progress + "%";
+                            progressBar.textContent = Math.round(progress) + "%";
+                        }
+                    });
+
+                    this.on("success", function (file, response) {
+                        // Store uploaded file path as returned by the backend
+                        if (response && response.fileName) {
+                            uploadedFiles.push(response.fileName);
+                        } else {
+                            // Fallback to client-generated filename if backend doesn't return one
+                            uploadedFiles.push(file.upload.filename);
+                        }
+                        console.log("uploaded files:", uploadedFiles);
+                        document.getElementById("uploaded-files").value = JSON.stringify(uploadedFiles);
+                        const successMark = file.previewElement.querySelector(".dz-success-mark");
+                        if (successMark) {
+                            successMark.style.opacity = "1";
+                        }
+                    });
+
+                    this.on("removedfile", function (file) {
+                        // Use the correct filename (from backend response if available, else client-generated)
+                        // Note: If you have re-added mock files, their 'upload.filename' will be the full path.
+                        // Ensure consistency here.
+                        const fileNameToRemove = file.upload.filename || file.name; // Prioritize full path, then original name
+
+                        const index = uploadedFiles.indexOf(fileNameToRemove);
+                        if (index > -1) {
+                            uploadedFiles.splice(index, 1);
+                            document.getElementById("uploaded-files").value = JSON.stringify(uploadedFiles);
+                        }
+                        console.log("removed file; uploaded files", uploadedFiles);
+
+                        // Re-enable submit button if no more files are uploading or queued
+                        if (this.getUploadingFiles().length === 0 && this.getQueuedFiles().length === 0) {
+                            enableSubmitButton();
+                        }
+                    });
+
+                    this.on("error", function (file, errorMessage) {
+                        console.error("Upload error", file.name, errorMessage);
+                        let errorMsgEnglish = `Failed to upload ${file.name}. Please try uploading again. If the problem persists, please check your internet connection and try again.`;
+                        let errorMsgThai = `ไม่สามารถอัปโหลด ${file.name} ได้ กรุณาลองอัปโหลดอีกครั้ง หากยังมีปัญหา กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองอีกครั้ง`;
+
+                        alert(currentLanguage == "th" ? errorMsgThai : errorMsgEnglish);
+
+                        // Re-enable submit button if no more files are uploading or queued
+                        if (this.getUploadingFiles().length === 0 && this.getQueuedFiles().length === 0) {
+                            enableSubmitButton();
+                        }
+                    });
+                }
             });
         }
 
-        createDropzone(currentLanguage, []);
-
+        // Initialize Dropzone when the DOM is ready
+        document.addEventListener("DOMContentLoaded", initializeDropzone);
       </script>
 </body>
 </html>
-
