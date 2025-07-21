@@ -13,3 +13,7 @@
   background-color: oklch(0.723 0.219 149.579) !important; /* Nice shade of green */
   background-image: none !important;
 }
+
+.dropzone .dz-success svg {
+  filter: brightness(0) saturate(100%) invert(77%) sepia(100%) saturate(7472%) hue-rotate(66deg) brightness(104%) contrast(104%); /* #00FF00 */
+}
