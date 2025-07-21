@@ -121,10 +121,23 @@
         });
 
         function changeLanguage(lang) {
+            // Don't allow language change if uploads are in progress
+            if (isUploading || uploadCount > 0) {
+                let errorMessageEnglish = 'Please wait for all uploads to complete before changing language.';
+                let errorMessageThai = 'กรุณารอให้การอัปโหลดเสร็จสิ้นก่อนเปลี่ยนภาษา';
+                if (lang === "th") {
+                    alert(errorMessageThai);
+                } else {
+                    alert(errorMessageEnglish);
+                }
+                return;
+            }
+
             document.querySelectorAll('[data-lang]').forEach(el => {
                 el.classList.toggle('hidden', el.getAttribute('data-lang') !== lang);
                 currentLanguage = lang;
-                let existingFiles = dropzone.files;
+                // Only pass files that were actually successfully uploaded
+                let existingFiles = dropzone.files.filter(file => file.status === Dropzone.SUCCESS);
                 dropzone.destroy();
                 createDropzone(currentLanguage, existingFiles);
             });
@@ -149,6 +162,8 @@
         let uploadedFiles = [];
         let dropzone = null;
         let currentLanguage = "en";
+        let isUploading = false;
+        let uploadCount = 0;
         const currentTimestamp = Date.now();
         const backendUrl = "https://phm4pqay5epdxoo7up3fxwkqya0rgsfd.lambda-url.us-east-2.on.aws";
         // const backendUrl = "http://localhost:8000"
@@ -182,7 +197,21 @@
                 expectedCheckoutTime.classList.remove('border-red-500');
             }
 
-            if (dropzone.files.length < 1) {
+            // Check if uploads are still in progress
+            if (isUploading || uploadCount > 0) {
+                let errorMessageEnglish = 'Please wait for all uploads to complete before submitting.';
+                let errorMessageThai = 'กรุณารอให้การอัปโหลดเสร็จสิ้นก่อนส่งแบบฟอร์ม';
+                if (currentLanguage == "th") {
+                    alert(errorMessageThai);
+                } else {
+                    alert(errorMessageEnglish);
+                }
+                return;
+            }
+
+            // Use a more robust way to check uploaded files
+            let currentUploadedFiles = [...uploadedFiles]; // Create a snapshot
+            if (currentUploadedFiles.length < 1) {
                 document.getElementById('file-upload').classList.add('border-red-500');
                 isValid = false;
             } else {
@@ -276,6 +305,9 @@
                 this.on("addedfile", async function (file) {
                     // Request a B2 Upload URL
                     disableSubmitButton();
+                    isUploading = true;
+                    uploadCount++;
+
                     const response = await fetch(`${backendUrl}/b2PresignedUrl`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' }
@@ -316,6 +348,13 @@
                     console.log("uploaded files:", uploadedFiles)
                     document.getElementById("uploaded-files").value = JSON.stringify(uploadedFiles);
                     file.previewElement.querySelector(".dz-success-mark").style.opacity = "1";
+
+                    // Update upload state
+                    uploadCount--;
+                    if (uploadCount <= 0) {
+                        isUploading = false;
+                        uploadCount = 0;
+                    }
                 });
 
                 this.on("removedfile", function (file) {
@@ -325,10 +364,34 @@
                         document.getElementById("uploaded-files").value = JSON.stringify(uploadedFiles);
                     }
                     console.log("removed file; uploaded files", uploadedFiles)
+
+                    // If file was being uploaded, update upload state
+                    if (file.status === Dropzone.UPLOADING) {
+                        uploadCount--;
+                        if (uploadCount <= 0) {
+                            isUploading = false;
+                            uploadCount = 0;
+                        }
+                    }
                 });
 
                 this.on("error", function (file, errorMessage) {
                     console.error("Upload error", file.name, errorMessage);
+                    let errorMsgEnglish = `Failed to upload ${file.name}. Please try uploading again. If the problem persists, please check your internet connection and try again.`;
+                    let errorMsgThai = `ไม่สามารถอัปโหลด ${file.name} ได้ กรุณาลองอัปโหลดอีกครั้ง หากยังมีปัญหา กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองอีกครั้ง`;
+
+                    if (currentLanguage == "th") {
+                        alert(errorMsgThai);
+                    } else {
+                        alert(errorMsgEnglish);
+                    }
+
+                    // Update upload state
+                    uploadCount--;
+                    if (uploadCount <= 0) {
+                        isUploading = false;
+                        uploadCount = 0;
+                    }
                 });
             }
             });
