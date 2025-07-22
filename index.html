@@ -391,7 +391,6 @@
                             uploadedFiles.push(file.upload.filename);
                         }
                         console.log("uploaded files:", uploadedFiles);
-                        document.getElementById("uploaded-files").value = JSON.stringify(uploadedFiles);
                         const successMark = file.previewElement.querySelector(".dz-success-mark");
                         if (successMark) {
                             successMark.style.opacity = "1";
