@@ -139,14 +139,6 @@
         }
 
         function changeLanguage(lang) {
-            // Check if any files are currently uploading or are in the queue
-            if (dropzoneInstance && (dropzoneInstance.getUploadingFiles().length > 0 || dropzoneInstance.getQueuedFiles().length > 0)) {
-                let errorMessageEnglish = 'Please wait for all uploads to complete before changing language.';
-                let errorMessageThai = 'กรุณารอให้การอัปโหลดเสร็จสิ้นก่อนเปลี่ยนภาษา';
-                alert(lang === "th" ? errorMessageThai : errorMessageEnglish);
-                return;
-            }
-
             document.querySelectorAll('[data-lang]').forEach(el => {
                 el.classList.toggle('hidden', el.getAttribute('data-lang') !== lang);
             });
@@ -233,27 +225,31 @@
             // Add uploaded files to the form data
             formData.uploadedFiles = uploadedFiles;
 
-            fetch(`${backendUrl}/formSubmit`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById("checkin-form").classList.add("hidden");
-                    document.getElementById("submit_success").classList.remove("hidden");
-                } else {
-                    enableSubmitButton();
-                    alert('There was an error submitting your check-in. Please try again.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An unexpected error occurred. Please try again later.');
-            });
+            alert(JSON.stringify(formData, null, 2));
+
+            enableSubmitButton();
+
+            // fetch(`${backendUrl}/formSubmit`, {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json'
+            //     },
+            //     body: JSON.stringify(formData)
+            // })
+            // .then(response => response.json())
+            // .then(data => {
+            //     if (data.success) {
+            //         document.getElementById("checkin-form").classList.add("hidden");
+            //         document.getElementById("submit_success").classList.remove("hidden");
+            //     } else {
+            //         enableSubmitButton();
+            //         alert('There was an error submitting your check-in. Please try again.');
+            //     }
+            // })
+            // .catch(error => {
+            //     console.error('Error:', error);
+            //     alert('An unexpected error occurred. Please try again later.');
+            // });
         }
 
         function guidGenerator() {
