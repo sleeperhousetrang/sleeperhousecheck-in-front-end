@@ -80,7 +80,6 @@
                 <label class="block" data-lang="en"></label>
             </div>
             <div class="dropzone mt-4 border-dashed border-2 p-4" id="file-upload"></div>
-            <input type="hidden" name="uploadedFiles" id="uploaded-files" value="[]">
 
             <p class="text-sm text-gray-700 mt-4" data-lang="en">
                 Sleeper House will not be responsible for any valuables left by guests in rooms or public areas including vehicles. Please do not leave important personal belongings or valuables items in the guest room or public areas.  Any guests causing damage to items belong to the property will be charged accordingly. <br /><br />  Each room has a safe deposit box. The dorm room has lockers for each bed (lock must be self-provided). Extra guests will be charged 250baht/person/night.
@@ -136,17 +135,6 @@
             document.getElementById("submit-btn").disabled = true;
             document.getElementById("submit-btn").classList.add('bg-gray-500');
             document.getElementById("submit-btn").classList.remove('bg-red-700');
-        }
-
-        function checkAndToggleSubmitButton() {
-            const uploadingOrQueued = dropzoneInstance.getUploadingFiles().length > 0 || dropzoneInstance.getQueuedFiles().length > 0;
-            const hasSuccessfulUploads = dropzoneInstance.files.filter(f => f.status === Dropzone.SUCCESS).length > 0;
-
-            if (!uploadingOrQueued && hasSuccessfulUploads) {
-                enableSubmitButton();
-            } else {
-                disableSubmitButton();
-            }
         }
 
         function changeLanguage(lang) {
@@ -226,6 +214,15 @@
                 if (!validEmail) {
                     errorMessageEnglish += ' Entered email is invalid.'
                     errorMessageThai += ' กรุณากรอกข้อมูลให้ครบถ้วน อีเมลที่ป้อนไม่ใช้ได้';
+                }
+                if (dropzoneInstance.files.length < 1) {
+                    // No files at all in the dropzone
+                    errorMessageEnglish += ' Please upload at least one file.';
+                    errorMessageThai += ' กรุณาอัปโหลดไฟล์อย่างน้อยหนึ่งไฟล์';
+                } else if (actualUploadedFilesCount < 1) {
+                    // Files exist, but none have uploaded successfully
+                    errorMessageEnglish += ' Please wait for your file(s) to finish uploading successfully.';
+                    errorMessageThai += ' กรุณารอให้ไฟล์ของคุณอัปโหลดเสร็จสมบูรณ์ก่อน';
                 }
                 alert(currentLanguage == "th" ? errorMessageThai : errorMessageEnglish);
                 return;
@@ -395,6 +392,11 @@
                         if (successMark) {
                             successMark.style.opacity = "1";
                         }
+
+                        // Re-enable submit button if no more files are uploading or queued
+                        if (this.getUploadingFiles().length === 0 && this.getQueuedFiles().length === 0) {
+                            enableSubmitButton();
+                        }
                     });
 
                     this.on("removedfile", function (file) {
@@ -406,7 +408,6 @@
                         const index = uploadedFiles.indexOf(fileNameToRemove);
                         if (index > -1) {
                             uploadedFiles.splice(index, 1);
-                            document.getElementById("uploaded-files").value = JSON.stringify(uploadedFiles);
                         }
                         console.log("removed file; uploaded files", uploadedFiles);
 
