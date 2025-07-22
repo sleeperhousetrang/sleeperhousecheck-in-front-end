@@ -138,6 +138,17 @@
             document.getElementById("submit-btn").classList.remove('bg-red-700');
         }
 
+        function checkAndToggleSubmitButton() {
+            const uploadingOrQueued = dropzoneInstance.getUploadingFiles().length > 0 || dropzoneInstance.getQueuedFiles().length > 0;
+            const hasSuccessfulUploads = dropzoneInstance.files.filter(f => f.status === Dropzone.SUCCESS).length > 0;
+
+            if (!uploadingOrQueued && hasSuccessfulUploads) {
+                enableSubmitButton();
+            } else {
+                disableSubmitButton();
+            }
+        }
+
         function changeLanguage(lang) {
             document.querySelectorAll('[data-lang]').forEach(el => {
                 el.classList.toggle('hidden', el.getAttribute('data-lang') !== lang);
@@ -201,7 +212,8 @@
                 return;
             }
 
-            if (uploadedFiles.length < 1) { // Use the `uploadedFiles` array for validation
+            let actualUploadedFilesCount = dropzoneInstance.files.filter(file => file.status === Dropzone.SUCCESS).length;
+            if (actualUploadedFilesCount < 1) { // Or if you require a minimum number of files
                 document.getElementById('file-upload').classList.add('border-red-500');
                 isValid = false;
             } else {
