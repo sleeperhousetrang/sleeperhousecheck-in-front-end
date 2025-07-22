@@ -232,7 +232,7 @@
             let formData = Object.fromEntries(new FormData(document.getElementById("checkin-form")).entries());
 
             // Add uploaded files to the form data
-            formData.uploadedFiles = uploadedFiles;
+            formData.uploadedFiles = JSON.stringify(uploadedFiles);
 
             fetch(`${backendUrl}/formSubmit`, {
                 method: 'POST',
