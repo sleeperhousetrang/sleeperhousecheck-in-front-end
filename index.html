@@ -234,31 +234,27 @@
             // Add uploaded files to the form data
             formData.uploadedFiles = uploadedFiles;
 
-            alert(JSON.stringify(formData, null, 2));
-
-            enableSubmitButton();
-
-            // fetch(`${backendUrl}/formSubmit`, {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json'
-            //     },
-            //     body: JSON.stringify(formData)
-            // })
-            // .then(response => response.json())
-            // .then(data => {
-            //     if (data.success) {
-            //         document.getElementById("checkin-form").classList.add("hidden");
-            //         document.getElementById("submit_success").classList.remove("hidden");
-            //     } else {
-            //         enableSubmitButton();
-            //         alert('There was an error submitting your check-in. Please try again.');
-            //     }
-            // })
-            // .catch(error => {
-            //     console.error('Error:', error);
-            //     alert('An unexpected error occurred. Please try again later.');
-            // });
+            fetch(`${backendUrl}/formSubmit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById("checkin-form").classList.add("hidden");
+                    document.getElementById("submit_success").classList.remove("hidden");
+                } else {
+                    enableSubmitButton();
+                    alert('There was an error submitting your check-in. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An unexpected error occurred. Please try again later.');
+            });
         }
 
         function guidGenerator() {
