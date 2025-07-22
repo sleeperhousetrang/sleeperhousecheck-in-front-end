@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build:css": "npx tailwindcss -i ./precompiled_styles.css -o ./styles.css --minify"
+    "build:css": "npx tailwindcss -i ./precompiled_styles.css -o ./styles.css --minify",
+    "serve": "npx http-server -p 8000"
   },
   "keywords": [],
   "author": "",
